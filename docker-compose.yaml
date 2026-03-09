@@ -1,0 +1,17 @@
+
+services:
+
+  frontend:
+    build:
+      context: ./mini-kanban-ui
+      dockerfile: Dockerfile
+    container_name: mk-frontend
+    ports:
+      - "80:80"
+    networks:
+      - minikanban_net
+
+networks:
+  minikanban_net:
+    external: true
+    name: minikanban_default

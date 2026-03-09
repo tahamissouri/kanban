@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: miniKanban-postgres
+
+    environment:
+      POSTGRES_DB: miniKanban
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - miniKanban_pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d miniKanban"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: miniKanban-api
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: jdbc:postgresql://postgres:5432/miniKanban
+      DB_USER: postgres
+      DB_PASS: postgres
+      JWT_SECRET: ${JWT_SECRET:-NKMoykZDFR7TlBbN2t9lVZFGBZ0b4iZ+suKMqFLW2+E=}
+      JWT_EXPIRY_MS: ${JWT_EXPIRY_MS:-86400000}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
+
+volumes:
+  miniKanban_pgdata:

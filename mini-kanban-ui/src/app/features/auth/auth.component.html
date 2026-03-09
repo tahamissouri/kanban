@@ -1,0 +1,66 @@
+<div class="auth-screen">
+  <div class="auth-box anim-slide-up">
+
+    <div class="auth-logo font-serif">mini<em>Kanban</em></div>
+    <p class="auth-sub font-mono">— project flow, simplified</p>
+
+    <div class="auth-tabs" role="tablist">
+      <div class="auth-tab" role="tab"
+           [class.active]="mode() === 'login'"
+           (click)="switchMode('login')"
+           (keydown.enter)="switchMode('login')"
+           tabindex="0">Sign In</div>
+      <div class="auth-tab" role="tab"
+           [class.active]="mode() === 'register'"
+           (click)="switchMode('register')"
+           (keydown.enter)="switchMode('register')"
+           tabindex="0">Register</div>
+    </div>
+
+    @if (mode() === 'login') {
+      <div class="field">
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" [(ngModel)]="loginEmail"
+               placeholder="you@example.com" autocomplete="email"
+               (keydown.enter)="submit()"/>
+      </div>
+      <div class="field">
+        <label for="login-pass">Password</label>
+        <input id="login-pass" type="password" [(ngModel)]="loginPassword"
+               placeholder="••••••••" autocomplete="current-password"
+               (keydown.enter)="submit()"/>
+      </div>
+    }
+
+    @if (mode() === 'register') {
+      <div class="field">
+        <label for="reg-user">Username</label>
+        <input id="reg-user" type="text" [(ngModel)]="regUsername"
+               placeholder="taha" autocomplete="username"/>
+      </div>
+      <div class="field">
+        <label for="reg-email">Email</label>
+        <input id="reg-email" type="email" [(ngModel)]="regEmail"
+               placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label for="reg-pass">Password</label>
+        <input id="reg-pass" type="password" [(ngModel)]="regPassword"
+               placeholder="••••••••" autocomplete="new-password"
+               (keydown.enter)="submit()"/>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="error-msg" role="alert">{{ error() }}</div>
+    }
+
+    <button class="btn btn-primary auth-submit"
+            [disabled]="loading()"
+            (click)="submit()">
+      @if (loading()) { <span class="spinner"></span> }
+      {{ mode() === 'login' ? 'Sign in →' : 'Create account →' }}
+    </button>
+
+  </div>
+</div>

@@ -1,0 +1,28 @@
+# ── Maven ─────────────────────────────────────────────────────────────────────
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# ── Spring Boot ───────────────────────────────────────────────────────────────
+application-local.properties
+application-local.yml
+application-dev.properties
+application-dev.yml
+*.log
+logs/
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

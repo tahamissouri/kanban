@@ -1,0 +1,232 @@
+<div class="board-wrap">
+
+  @if (loading()) {
+    <div class="loading-full">
+      <span class="spinner-lg"></span>
+      <span class="font-mono">Loading board…</span>
+    </div>
+  }
+
+  @if (!loading()) {
+
+    <!-- Owner-only toolbar -->
+    @if (isOwner()) {
+      <div class="board-toolbar">
+        <button class="btn btn-ghost btn-sm" (click)="showMembers.set(true)">
+          👥 Members
+        </button>
+      </div>
+    }
+
+    <!-- Kanban columns -->
+    <div class="board-view" cdkDropListGroup>
+
+      @for (col of columns(); track col.id; let ci = $index) {
+        <div class="column anim-slide-up" [style.animation-delay]="ci * 60 + 'ms'">
+
+          <!-- Column header -->
+          <div class="col-header">
+            <span class="col-name"
+                  [attr.contenteditable]="true"
+                  [attr.aria-label]="'Column name: ' + col.name"
+                  (blur)="renameColumn(col, $event.target)"
+                  (keydown.enter)="$event.preventDefault(); $any($event.target).blur()">{{ col.name }}</span>
+            <span class="col-count font-mono">{{ getCards(col.id).length }}</span>
+            <button class="btn-icon" title="Delete column" (click)="deleteColumn(col)">×</button>
+          </div>
+
+          <!-- Cards drop list -->
+          <div class="cards-list"
+               [id]="'col-' + col.id"
+               cdkDropList
+               [cdkDropListData]="getCards(col.id)"
+               [cdkDropListConnectedTo]="getColumnDropIds()"
+               (cdkDropListDropped)="onCardDrop($event, col)">
+
+            @for (card of getCards(col.id); track card.id) {
+              <div class="card anim-card-in"
+                   cdkDrag
+                   [cdkDragData]="card"
+                   (click)="openCardDetail(card, col.id)"
+                   role="button"
+                   tabindex="0"
+                   [attr.aria-label]="card.title">
+
+                <!-- Custom drag preview -->
+                <div *cdkDragPreview class="card-drag-preview">{{ card.title }}</div>
+
+                <div class="card-drag-handle" cdkDragHandle aria-hidden="true">⠿</div>
+
+                <div class="card-title">{{ card.title }}</div>
+
+                @if (card.description) {
+                  <div class="card-desc">{{ card.description }}</div>
+                }
+
+                <button class="btn-icon card-del-btn"
+                        title="Delete card"
+                        aria-label="Delete card"
+                        (click)="deleteCard(card, col.id); $event.stopPropagation()">×</button>
+
+              </div>
+            }
+
+            <!-- Placeholder shown when list is empty -->
+            @if (getCards(col.id).length === 0) {
+              <div class="cards-empty-hint font-mono">Drop cards here</div>
+            }
+
+          </div>
+
+          <!-- Inline add card -->
+          <div class="col-footer">
+            @if (addingCardColId() === col.id) {
+              <div class="inline-add">
+                <textarea [(ngModel)]="newCardTitle"
+                          rows="2"
+                          placeholder="Card title…"
+                          autofocus
+                          (keydown.enter)="submitAddCard(col); $event.preventDefault()"
+                          (keydown.escape)="addingCardColId.set(null)"></textarea>
+                <div class="inline-actions">
+                  <button class="btn btn-primary btn-sm"
+                          (click)="submitAddCard(col)">Add</button>
+                  <button class="btn btn-ghost btn-sm"
+                          (click)="addingCardColId.set(null)">Cancel</button>
+                </div>
+              </div>
+            } @else {
+              <button class="add-card-btn"
+                      (click)="addingCardColId.set(col.id); newCardTitle = ''">
+                + Add card
+              </button>
+            }
+          </div>
+
+        </div>
+      }
+
+      <!-- Add column -->
+      <div class="add-col-area">
+        @if (addingColumn()) {
+          <div class="add-col-form">
+            <input type="text"
+                   [(ngModel)]="newColName"
+                   placeholder="Column name"
+                   autofocus
+                   (keydown.enter)="submitAddColumn()"
+                   (keydown.escape)="addingColumn.set(false)"/>
+            <div class="inline-actions" style="margin-top:8px">
+              <button class="btn btn-primary btn-sm"
+                      (click)="submitAddColumn()">Add</button>
+              <button class="btn btn-ghost btn-sm"
+                      (click)="addingColumn.set(false)">Cancel</button>
+            </div>
+          </div>
+        } @else {
+          <button class="add-col-btn"
+                  title="Add column"
+                  (click)="addingColumn.set(true)">+</button>
+        }
+      </div>
+
+    </div>
+
+  }
+
+</div>
+
+<!-- ── Card detail modal ─────────────────────────────────────── -->
+@if (editCard()) {
+  <div class="modal-overlay" (click)="editCard.set(null)" (keydown.escape)="editCard.set(null)">
+    <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+      <div class="modal-header">
+        <span class="modal-title font-serif">Edit Card</span>
+        <button class="btn-icon" (click)="editCard.set(null)" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="section-label">Title</p>
+        <textarea class="edit-input edit-title"
+                  rows="2"
+                  [(ngModel)]="editTitle"
+                  placeholder="Card title"></textarea>
+
+        <div class="divider"></div>
+
+        <p class="section-label">Description</p>
+        <textarea class="edit-input edit-desc"
+                  rows="5"
+                  [(ngModel)]="editDesc"
+                  placeholder="Add a description…"></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-danger"
+                (click)="deleteCard(editCard()!, editColId()!)">Delete</button>
+        <span style="flex:1"></span>
+        <button class="btn btn-ghost"   (click)="editCard.set(null)">Cancel</button>
+        <button class="btn btn-primary" (click)="saveCard()">Save changes</button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ── Members modal ─────────────────────────────────────────── -->
+@if (showMembers()) {
+  <div class="modal-overlay" (click)="showMembers.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+      <div class="modal-header">
+        <span class="modal-title font-serif">Board Members</span>
+        <button class="btn-icon" (click)="showMembers.set(false)" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="section-label">Owner</p>
+        <div class="member-row">
+          <div class="avatar">{{ board()!.owner.userName.slice(0,2).toUpperCase() }}</div>
+          <div class="member-info">
+            <div class="member-name">{{ board()!.owner.userName }}</div>
+            <div class="member-email font-mono">{{ board()!.owner.email }}</div>
+          </div>
+          <span class="member-badge font-mono">owner</span>
+        </div>
+
+        @if (board()!.members.length > 0) {
+          <p class="section-label" style="margin-top:16px">Members</p>
+          @for (m of board()!.members; track m.id) {
+            <div class="member-row">
+              <div class="avatar" style="background:var(--surface3);color:var(--text2)">
+                {{ m.userName.slice(0,2).toUpperCase() }}
+              </div>
+              <div class="member-info">
+                <div class="member-name">{{ m.userName }}</div>
+                <div class="member-email font-mono">{{ m.email }}</div>
+              </div>
+            </div>
+          }
+        }
+
+        <div class="divider"></div>
+
+        <p class="section-label">Add member by user ID</p>
+        <div class="field">
+          <input type="number"
+                 [(ngModel)]="newMemberId"
+                 placeholder="User ID"
+                 (keydown.enter)="submitAddMember()"/>
+        </div>
+
+        @if (memberError()) {
+          <div class="error-msg">{{ memberError() }}</div>
+        }
+
+        <button class="btn btn-primary" (click)="submitAddMember()">Add member</button>
+      </div>
+
+    </div>
+  </div>
+}

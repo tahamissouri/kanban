@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  flyway:
+    enabled: false
+
+JWT_SECRET: dGVzdFNlY3JldEtleUZvclRlc3Rpbmd0ZXN0U2VjcmV0S2V5
+JWT_EXPIRY_MS: 86400000
+
+logging:
+  level:
+    root: WARN

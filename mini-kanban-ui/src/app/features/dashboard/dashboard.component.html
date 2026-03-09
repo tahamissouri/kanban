@@ -1,0 +1,97 @@
+<div class="dashboard anim-fade-in">
+
+  <div class="dash-header">
+    <h1 class="dash-title font-serif">Your <em>Boards</em></h1>
+    <button class="btn btn-primary" (click)="openCreateModal()">+ New board</button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <span class="spinner-lg"></span>
+      <span class="font-mono">Loading boards…</span>
+    </div>
+  }
+
+  @if (!loading()) {
+    <div class="boards-grid">
+
+      @for (board of boards(); track board.id; let i = $index) {
+        <div class="board-card anim-slide-up"
+             [style.animation-delay]="i * 50 + 'ms'"
+             (click)="openBoard(board)"
+             role="button"
+             tabindex="0"
+             [attr.aria-label]="'Open board: ' + board.name"
+             (keydown.enter)="openBoard(board)">
+
+          <div class="board-card-name">{{ board.name }}</div>
+
+          <div class="board-card-meta font-mono">
+            <span class="owner-label">{{ board.owner.userName }}</span>
+            <span>{{ board.members.length + 1 }} member{{ board.members.length !== 0 ? 's' : '' }}</span>
+          </div>
+
+          @if (isOwner(board)) {
+            <button class="btn-icon board-delete-btn"
+                    title="Delete board"
+                    aria-label="Delete board"
+                    (click)="deleteBoard(board, $event)">×</button>
+          }
+        </div>
+      }
+
+      @if (boards().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">No boards yet</div>
+          <div class="empty-sub">Create your first board to get started</div>
+        </div>
+      }
+
+      <div class="board-card board-new-card anim-slide-up"
+           [style.animation-delay]="boards().length * 50 + 'ms'"
+           (click)="openCreateModal()"
+           role="button"
+           tabindex="0"
+           (keydown.enter)="openCreateModal()">
+        <span class="new-icon">+</span>
+        <span>New board</span>
+      </div>
+
+    </div>
+  }
+
+</div>
+
+<!-- Create board modal -->
+@if (showCreateModal()) {
+  <div class="modal-overlay" (click)="showCreateModal.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <span class="modal-title font-serif">New Board</span>
+        <button class="btn-icon" (click)="showCreateModal.set(false)" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="board-name">Board name</label>
+          <input id="board-name"
+                 type="text"
+                 [(ngModel)]="newBoardName"
+                 placeholder="e.g. Product Roadmap"
+                 autofocus
+                 (keydown.enter)="submitCreate()"
+                 (keydown.escape)="showCreateModal.set(false)"/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showCreateModal.set(false)">Cancel</button>
+        <button class="btn btn-primary"
+                [disabled]="createLoading() || !newBoardName.trim()"
+                (click)="submitCreate()">
+          @if (createLoading()) { <span class="spinner"></span> }
+          Create board
+        </button>
+      </div>
+    </div>
+  </div>
+}
