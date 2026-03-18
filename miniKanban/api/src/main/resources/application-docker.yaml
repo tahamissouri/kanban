@@ -1,24 +1,19 @@
 server:
-  port: 8080
   error:
-    include-message: always
-    include-binding-errors: always
-    include-stacktrace: never
-    include-exception: false
+    include-message: never
+    include-binding-errors: never
 
 spring:
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASS}
-
-  flyway:
-    enabled: true
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: false
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
 
 logging:
   level:
