@@ -37,14 +37,14 @@ public class BoardService extends CRUD<BoardRepository, BoardMapper, BoardEntity
                 .anyMatch(m -> m.getId().equals(userId));
     }
 
-    public boolean isOnwer(Object principal, Object boardId) {
+    public boolean isOwner(Object principal, Object boardId) {
         Long userId = ((Number) principal).longValue();
         Long bId    = ((Number) boardId).longValue();
         return findById(bId).getOwner().getId().equals(userId);
     }
 
     public boolean isCollaborator(Object principal, Object boardId) {
-        return isMember(principal, boardId) || isOnwer(principal, boardId);
+        return isMember(principal, boardId) || isOwner(principal, boardId);
     }
 
     public BoardResponseDto create(CreateBoardRequestDto dto, Long ownerId) {

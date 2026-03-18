@@ -155,14 +155,14 @@ class BoardServiceTest {
     @DisplayName("isOnwer: returns true when principal matches board owner")
     void isOwner_true() {
         when(boardRepository.findById(1L)).thenReturn(Optional.of(board));
-        assertThat(boardService.isOnwer((Object) 1L, (Object) 1L)).isTrue();
+        assertThat(boardService.isOwner((Object) 1L, (Object) 1L)).isTrue();
     }
 
     @Test
     @DisplayName("isOnwer: returns false when principal is different from owner")
     void isOwner_false() {
         when(boardRepository.findById(1L)).thenReturn(Optional.of(board));
-        assertThat(boardService.isOnwer((Object) 2L, (Object) 1L)).isFalse();
+        assertThat(boardService.isOwner((Object) 2L, (Object) 1L)).isFalse();
     }
 
     // ── isMember (fixed) ──────────────────────────────────────────────────

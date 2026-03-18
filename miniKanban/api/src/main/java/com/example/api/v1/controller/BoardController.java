@@ -33,14 +33,14 @@ public class BoardController {
     }
 
 
-    @PreAuthorize("@boardService.isOnwer(authentication.getPrincipal(),#boardId)")
+    @PreAuthorize("@boardService.isOwner(authentication.getPrincipal(),#boardId)")
     @DeleteMapping("/{boardId}")
     public ResponseEntity<Void> deleteBoard(@PathVariable Long boardId) {
         boardService.delete(boardId);
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("@boardService.isOnwer(authentication.principal, #boardId)")
+    @PreAuthorize("@boardService.isOwner(authentication.principal, #boardId)")
     @PatchMapping("/{boardId}/members/{userId}")
     public ResponseEntity<Void> addMember(@PathVariable Long boardId, @PathVariable Long userId) {
         boardService.addMember(boardId, userId);
