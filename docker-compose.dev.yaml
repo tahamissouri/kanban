@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Development
+  postgres:
+    image: postgres:15-alpine
+    container_name: mk-postgres-dev
+    environment:
+      POSTGRES_DB: minikanban_dev
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./miniKanban/api/src/main/resources/db/migration:/docker-entrypoint-initdb.d
+    networks:
+      - minikanban_dev_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d minikanban_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # PgAdmin for Database Management (Optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mk-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@minikanban.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - minikanban_dev_net
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+  # Redis for Caching (Optional - for Phase 5)
+  redis:
+    image: redis:7-alpine
+    container_name: mk-redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - minikanban_dev_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redis_data:/data
+
+networks:
+  minikanban_dev_net:
+    driver: bridge
+    name: minikanban_dev_network
+
+volumes:
+  postgres_dev_data:
+    name: minikanban_postgres_dev_data
+  pgadmin_data:
+    name: minikanban_pgadmin_data
+  redis_data:
+    name: minikanban_redis_data
+
+# Made with Bob
